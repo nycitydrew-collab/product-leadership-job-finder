@@ -1,0 +1,68 @@
+name: Product Leadership Job Finder
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: "0 */6 * * *"
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: product-leadership-job-search
+  cancel-in-progress: false
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - name: Get repository files
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install search tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Search for leadership jobs
+        run: python leadership_job_finder.py
+
+      - name: Create alert for new jobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          COUNT="$(cat new_jobs_count.txt)"
+          echo "New jobs found: $COUNT"
+
+          if [ "${COUNT:-0}" -gt 0 ]; then
+            gh issue create \
+              --title "Product leadership alert: $COUNT new job(s)" \
+              --body-file new_jobs.md
+          else
+            echo "No new jobs found."
+          fi
+
+      - name: Save jobs.csv to GitHub
+        run: |
+          git config user.name "Product Leadership Job Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add jobs.csv
+
+          if git diff --cached --quiet; then
+            echo "No changes to jobs.csv."
+          else
+            git commit -m "Update product leadership job listings"
+            git pull --rebase origin main
+            git push origin main
+          fi
