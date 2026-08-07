@@ -15,65 +15,163 @@ from ddgs import DDGS
 MAX_RESULTS_PER_QUERY = 20
 SEARCH_TIMEOUT_SECONDS = 6
 
-# Hard limit so the search does not run forever
+# Prevents the search from running forever
 MAX_TOTAL_SEARCH_SECONDS = 150
 
 MAX_JOBS_IN_ISSUE = 40
 
 
 # ============================================================
-# LOCATION FILTER
+# SEARCH QUERIES
 #
-# ONLY:
-# - NEW YORK CITY
-# - REMOTE
+# ANYWHERE IN THE UNITED STATES
 # ============================================================
 
-NYC_TERMS = (
-    "new york, ny",
-    "new york ny",
-    "new york city",
-    "new york, new york",
-    "nyc",
-    "manhattan",
-    "brooklyn",
-    "queens",
-    "bronx",
-    "staten island",
-)
+def build_search_queries():
+
+    return [
+
+        # ====================================================
+        # VP - PRODUCT DEVELOPMENT
+        # ====================================================
+
+        '"VP Product Development" "United States"',
+        '"VP of Product Development" "United States"',
+        '"Vice President Product Development" "United States"',
+        '"Vice President of Product Development" "United States"',
 
 
-REMOTE_TERMS = (
-    "remote",
-    "fully remote",
-    "work from home",
-    "work-from-home",
-    "remote - us",
-    "remote us",
-    "remote, us",
-    "remote united states",
-    "remote - united states",
-)
+        # ====================================================
+        # VP - PRODUCT
+        # ====================================================
+
+        '"VP Product" "United States"',
+        '"VP of Product" "United States"',
+        '"Vice President Product" "United States"',
+        '"Vice President of Product" "United States"',
 
 
-NOT_REMOTE_TERMS = (
-    "not remote",
-    "no remote",
-    "onsite only",
-    "on-site only",
-    "must work onsite",
-    "must work on-site",
-)
+        # ====================================================
+        # VP - SOURCING
+        # ====================================================
+
+        '"VP Sourcing" "United States"',
+        '"VP of Sourcing" "United States"',
+        '"Vice President Sourcing" "United States"',
+        '"Vice President of Sourcing" "United States"',
+
+
+        # ====================================================
+        # PRODUCT DEVELOPMENT DIRECTORS
+        # ====================================================
+
+        '"Director Product Development" "United States"',
+        '"Director of Product Development" "United States"',
+        '"Senior Director Product Development" "United States"',
+        '"Senior Director of Product Development" "United States"',
+
+
+        # ====================================================
+        # SOURCING DIRECTORS
+        # ====================================================
+
+        '"Director Sourcing" "United States"',
+        '"Director of Sourcing" "United States"',
+        '"Senior Director Sourcing" "United States"',
+        '"Director Strategic Sourcing" "United States"',
+
+
+        # ====================================================
+        # CATEGORY DIRECTORS
+        # ====================================================
+
+        '"Category Director" "United States"',
+        '"Senior Category Director" "United States"',
+        '"Director Category Management" "United States"',
+        '"Director of Category Management" "United States"',
+
+
+        # ====================================================
+        # CATEGORY MANAGERS
+        # ====================================================
+
+        '"Category Manager" "United States"',
+        '"Senior Category Manager" "United States"',
+        '"Category Management Manager" "United States"',
+
+
+        # ====================================================
+        # PRODUCT DEVELOPMENT + SOURCING
+        # ====================================================
+
+        '"VP" "Product Development" "Sourcing" "United States"',
+        '"Director" "Product Development" "Sourcing" "United States"',
+
+
+        # ====================================================
+        # HEAD POSITIONS
+        # ====================================================
+
+        '"Head of Product Development" "United States"',
+        '"Head of Product" "United States"',
+        '"Head of Sourcing" "United States"',
+
+
+        # ====================================================
+        # DIRECT CAREER SYSTEM SEARCHES
+        # ====================================================
+
+        'site:myworkdayjobs.com '
+        '("VP Product" OR '
+        '"VP Product Development" OR '
+        '"Director Product Development" OR '
+        '"Director Sourcing" OR '
+        '"Category Director" OR '
+        '"Category Manager") '
+        '"United States"',
+
+        'site:greenhouse.io '
+        '("VP Product" OR '
+        '"VP Product Development" OR '
+        '"Director Product Development" OR '
+        '"Director Sourcing" OR '
+        '"Category Director" OR '
+        '"Category Manager") '
+        '"United States"',
+
+        'site:lever.co '
+        '("VP Product" OR '
+        '"VP Product Development" OR '
+        '"Director Product Development" OR '
+        '"Director Sourcing" OR '
+        '"Category Director" OR '
+        '"Category Manager") '
+        '"United States"',
+
+        'site:smartrecruiters.com '
+        '("VP Product" OR '
+        '"VP Product Development" OR '
+        '"Director Product Development" OR '
+        '"Director Sourcing" OR '
+        '"Category Director" OR '
+        '"Category Manager") '
+        '"United States"',
+
+        'site:ashbyhq.com '
+        '("VP Product" OR '
+        '"VP Product Development" OR '
+        '"Director Product Development" OR '
+        '"Director Sourcing" OR '
+        '"Category Director" OR '
+        '"Category Manager") '
+        '"United States"',
+    ]
 
 
 # ============================================================
-# JOB BOARD / AGGREGATOR SITES
+# JOB SITES WE COMPLETELY BLOCK
 #
-# IMPORTANT:
-# WE COMPLETELY REJECT RESULTS FROM THESE SITES.
-#
-# We do not want Indeed to show as the company.
-# We don't even save the Indeed result.
+# THESE ARE SEARCH SITES — NOT EMPLOYERS.
 # ============================================================
 
 BLOCKED_JOB_SITES = (
@@ -92,10 +190,9 @@ BLOCKED_JOB_SITES = (
 
 
 # ============================================================
-# REAL RECRUITING SYSTEMS
+# REAL ATS / COMPANY RECRUITING SYSTEMS
 #
-# These are allowed because they host jobs FOR companies.
-# We will try to identify the actual employer.
+# THESE ARE ALLOWED.
 # ============================================================
 
 ATS_DOMAINS = (
@@ -111,9 +208,7 @@ ATS_DOMAINS = (
 
 
 # ============================================================
-# INVALID COMPANY NAMES
-#
-# THESE CAN NEVER BE SAVED AS THE EMPLOYER
+# NAMES THAT CAN NEVER BE AN EMPLOYER
 # ============================================================
 
 INVALID_COMPANY_NAMES = (
@@ -157,6 +252,89 @@ INVALID_COMPANY_NAMES = (
 
 
 # ============================================================
+# USA LOCATION DETECTION
+# ============================================================
+
+US_STATE_NAMES = (
+    "alabama",
+    "alaska",
+    "arizona",
+    "arkansas",
+    "california",
+    "colorado",
+    "connecticut",
+    "delaware",
+    "florida",
+    "georgia",
+    "hawaii",
+    "idaho",
+    "illinois",
+    "indiana",
+    "iowa",
+    "kansas",
+    "kentucky",
+    "louisiana",
+    "maine",
+    "maryland",
+    "massachusetts",
+    "michigan",
+    "minnesota",
+    "mississippi",
+    "missouri",
+    "montana",
+    "nebraska",
+    "nevada",
+    "new hampshire",
+    "new jersey",
+    "new mexico",
+    "new york",
+    "north carolina",
+    "north dakota",
+    "ohio",
+    "oklahoma",
+    "oregon",
+    "pennsylvania",
+    "rhode island",
+    "south carolina",
+    "south dakota",
+    "tennessee",
+    "texas",
+    "utah",
+    "vermont",
+    "virginia",
+    "washington",
+    "west virginia",
+    "wisconsin",
+    "wyoming",
+    "district of columbia",
+)
+
+
+US_STATE_CODES = (
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE",
+    "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS",
+    "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS",
+    "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY",
+    "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV",
+    "WI", "WY", "DC",
+)
+
+
+REMOTE_TERMS = (
+    "remote",
+    "fully remote",
+    "work from home",
+    "work-from-home",
+    "remote - us",
+    "remote us",
+    "remote, us",
+    "remote united states",
+    "remote - united states",
+)
+
+
+# ============================================================
 # CSV COLUMNS
 # ============================================================
 
@@ -183,141 +361,6 @@ TRACKING_KEYS = {
     "trackingid",
     "gh_src",
 }
-
-
-# ============================================================
-# SEARCH QUERIES
-#
-# These are deliberately targeted so we do not make
-# 100+ searches like the first version of the actuarial bot.
-# ============================================================
-
-def build_search_queries():
-
-    return [
-
-        # ====================================================
-        # VP - PRODUCT DEVELOPMENT
-        # ====================================================
-
-        '"VP Product Development" ("New York" OR remote)',
-
-        '"VP of Product Development" ("New York" OR remote)',
-
-        '"Vice President Product Development" '
-        '("New York" OR remote)',
-
-        '"Vice President of Product Development" '
-        '("New York" OR remote)',
-
-
-        # ====================================================
-        # VP - SOURCING
-        # ====================================================
-
-        '"VP Sourcing" ("New York" OR remote)',
-
-        '"VP of Sourcing" ("New York" OR remote)',
-
-        '"Vice President Sourcing" '
-        '("New York" OR remote)',
-
-        '"Vice President of Sourcing" '
-        '("New York" OR remote)',
-
-
-        # ====================================================
-        # VP - PRODUCT DEVELOPMENT + SOURCING
-        # ====================================================
-
-        '"VP" "Product Development" "Sourcing" '
-        '("New York" OR remote)',
-
-
-        # ====================================================
-        # DIRECTOR - PRODUCT DEVELOPMENT
-        # ====================================================
-
-        '"Director Product Development" '
-        '("New York" OR remote)',
-
-        '"Director of Product Development" '
-        '("New York" OR remote)',
-
-        '"Senior Director Product Development" '
-        '("New York" OR remote)',
-
-
-        # ====================================================
-        # DIRECTOR - SOURCING
-        # ====================================================
-
-        '"Director Sourcing" '
-        '("New York" OR remote)',
-
-        '"Director of Sourcing" '
-        '("New York" OR remote)',
-
-        '"Senior Director Sourcing" '
-        '("New York" OR remote)',
-
-        '"Director Strategic Sourcing" '
-        '("New York" OR remote)',
-
-
-        # ====================================================
-        # PRODUCT DEVELOPMENT + SOURCING
-        # ====================================================
-
-        '"Director" "Product Development" "Sourcing" '
-        '("New York" OR remote)',
-
-
-        # ====================================================
-        # HEAD ROLES
-        # ====================================================
-
-        '"Head of Product Development" '
-        '("New York" OR remote)',
-
-        '"Head of Sourcing" '
-        '("New York" OR remote)',
-
-
-        # ====================================================
-        # DIRECT ATS SEARCHES
-        # ====================================================
-
-        'site:myworkdayjobs.com '
-        '("VP Product Development" OR '
-        '"Director Product Development" OR '
-        '"Director Sourcing") '
-        '("New York" OR remote)',
-
-        'site:greenhouse.io '
-        '("VP Product Development" OR '
-        '"Director Product Development" OR '
-        '"Director Sourcing") '
-        '("New York" OR remote)',
-
-        'site:lever.co '
-        '("VP Product Development" OR '
-        '"Director Product Development" OR '
-        '"Director Sourcing") '
-        '("New York" OR remote)',
-
-        'site:jobs.smartrecruiters.com '
-        '("VP Product Development" OR '
-        '"Director Product Development" OR '
-        '"Director Sourcing") '
-        '("New York" OR remote)',
-
-        'site:ashbyhq.com '
-        '("VP Product Development" OR '
-        '"Director Product Development" OR '
-        '"Director Sourcing") '
-        '("New York" OR remote)',
-    ]
 
 
 # ============================================================
@@ -424,68 +467,137 @@ def is_blocked_job_site(url):
 
 
 # ============================================================
-# LOCATION DETECTION
+# USA LOCATION DETECTION
 # ============================================================
 
 def get_location_type(
     title,
-    snippet
+    snippet,
+    query=""
 ):
 
     combined = (
-        f"{title} {snippet}"
+        f"{title} {snippet} {query}"
         .lower()
     )
 
-    is_nyc = any(
-        term in combined
-        for term in NYC_TERMS
-    )
 
-    explicitly_not_remote = any(
-        term in combined
-        for term in NOT_REMOTE_TERMS
-    )
+    # --------------------------------------------------------
+    # REMOTE USA
+    # --------------------------------------------------------
 
-    is_remote = (
-        any(
-            term in combined
-            for term in REMOTE_TERMS
+    if any(
+        term in combined
+        for term in REMOTE_TERMS
+    ):
+
+        return "Remote - USA"
+
+
+    # --------------------------------------------------------
+    # UNITED STATES LANGUAGE
+    # --------------------------------------------------------
+
+    if any(
+        term in combined
+        for term in (
+            "united states",
+            "usa",
+            "u.s.",
+            "u.s.a.",
+            "us based",
+            "us-based",
         )
-        and not explicitly_not_remote
+    ):
+
+        return "USA"
+
+
+    # --------------------------------------------------------
+    # FULL STATE NAME
+    # --------------------------------------------------------
+
+    if any(
+        state in combined
+        for state in US_STATE_NAMES
+    ):
+
+        return "USA"
+
+
+    # --------------------------------------------------------
+    # CITY, STATE CODE
+    #
+    # Examples:
+    # Chicago, IL
+    # New York, NY
+    # Dallas, TX
+    # --------------------------------------------------------
+
+    state_pattern = (
+        r",\s*("
+        + "|".join(
+            US_STATE_CODES
+        )
+        + r")\b"
     )
 
-    if is_nyc and is_remote:
-        return "NYC / Remote"
+    if re.search(
+        state_pattern,
+        f"{title} {snippet}",
+        flags=re.IGNORECASE
+    ):
 
-    if is_nyc:
-        return "NYC"
+        return "USA"
 
-    if is_remote:
-        return "Remote"
+
+    # Every broad query in this bot is explicitly
+    # targeted to the United States.
+    if "united states" in query.lower():
+
+        return "USA"
+
 
     return None
 
 
 # ============================================================
 # ROLE CATEGORY
-#
-# This lets jobs.csv organize positions.
 # ============================================================
 
 def get_role_category(title):
 
-    title_lower = title.lower()
+    title_lower = (
+        title.lower()
+    )
 
-    has_product = (
+
+    has_product_development = (
         "product development"
         in title_lower
     )
+
+
+    has_product = (
+        "product"
+        in title_lower
+    )
+
 
     has_sourcing = (
         "sourcing"
         in title_lower
     )
+
+
+    has_category = (
+        "category"
+        in title_lower
+        or
+        "category management"
+        in title_lower
+    )
+
 
     is_vp = any(
         term in title_lower
@@ -495,18 +607,26 @@ def get_role_category(title):
             "vp,",
             "vp -",
             "vp:",
+            "vp/",
         )
     )
 
-    is_senior_director = (
-        "senior director"
-        in title_lower
+
+    is_senior_director = any(
+        term in title_lower
+        for term in (
+            "senior director",
+            "sr director",
+            "sr. director",
+        )
     )
+
 
     is_director = (
         "director"
         in title_lower
     )
+
 
     is_head = (
         "head of"
@@ -514,21 +634,51 @@ def get_role_category(title):
     )
 
 
-    if is_vp and has_product and has_sourcing:
+    is_senior_category_manager = any(
+        term in title_lower
+        for term in (
+            "senior category manager",
+            "sr category manager",
+            "sr. category manager",
+        )
+    )
+
+
+    is_category_manager = (
+        "category manager"
+        in title_lower
+    )
+
+
+    # ========================================================
+    # VP
+    # ========================================================
+
+    if (
+        is_vp
+        and has_product_development
+        and has_sourcing
+    ):
 
         return (
             "VP - Product Development & Sourcing"
         )
 
 
-    if is_vp and has_product:
+    if (
+        is_vp
+        and has_product_development
+    ):
 
         return (
             "VP - Product Development"
         )
 
 
-    if is_vp and has_sourcing:
+    if (
+        is_vp
+        and has_sourcing
+    ):
 
         return (
             "VP - Sourcing"
@@ -536,8 +686,36 @@ def get_role_category(title):
 
 
     if (
-        is_senior_director
+        is_vp
         and has_product
+    ):
+
+        return (
+            "VP - Product"
+        )
+
+
+    # ========================================================
+    # SENIOR CATEGORY DIRECTOR
+    # ========================================================
+
+    if (
+        is_senior_director
+        and has_category
+    ):
+
+        return (
+            "Senior Category Director"
+        )
+
+
+    # ========================================================
+    # SENIOR DIRECTORS
+    # ========================================================
+
+    if (
+        is_senior_director
+        and has_product_development
         and has_sourcing
     ):
 
@@ -549,7 +727,7 @@ def get_role_category(title):
 
     if (
         is_senior_director
-        and has_product
+        and has_product_development
     ):
 
         return (
@@ -567,9 +745,27 @@ def get_role_category(title):
         )
 
 
+    # ========================================================
+    # CATEGORY DIRECTOR
+    # ========================================================
+
     if (
         is_director
-        and has_product
+        and has_category
+    ):
+
+        return (
+            "Category Director"
+        )
+
+
+    # ========================================================
+    # DIRECTORS
+    # ========================================================
+
+    if (
+        is_director
+        and has_product_development
         and has_sourcing
     ):
 
@@ -580,7 +776,7 @@ def get_role_category(title):
 
     if (
         is_director
-        and has_product
+        and has_product_development
     ):
 
         return (
@@ -598,9 +794,13 @@ def get_role_category(title):
         )
 
 
+    # ========================================================
+    # HEAD
+    # ========================================================
+
     if (
         is_head
-        and has_product
+        and has_product_development
     ):
 
         return (
@@ -618,11 +818,39 @@ def get_role_category(title):
         )
 
 
+    if (
+        is_head
+        and has_product
+    ):
+
+        return (
+            "Head - Product"
+        )
+
+
+    # ========================================================
+    # CATEGORY MANAGEMENT
+    # ========================================================
+
+    if is_senior_category_manager:
+
+        return (
+            "Senior Category Manager"
+        )
+
+
+    if is_category_manager:
+
+        return (
+            "Category Manager"
+        )
+
+
     return None
 
 
 # ============================================================
-# CHECK WHETHER TITLE IS ACTUALLY RELEVANT
+# RELEVANT ROLE FILTER
 # ============================================================
 
 def is_relevant_role(title):
@@ -632,47 +860,29 @@ def is_relevant_role(title):
     )
 
 
-    # Must involve either Product Development or Sourcing
-    has_target_function = any(
-        phrase in title_lower
-        for phrase in (
-            "product development",
-            "sourcing",
+    category = (
+        get_role_category(
+            title
         )
     )
 
 
-    if not has_target_function:
+    if category is None:
         return False
 
 
-    # Must be leadership level
-    has_leadership_level = any(
-        phrase in title_lower
-        for phrase in (
-            "vice president",
-            "vp ",
-            "vp,",
-            "vp -",
-            "vp:",
-            "director",
-            "head of",
-        )
-    )
+    # --------------------------------------------------------
+    # REMOVE JUNIOR / UNWANTED ROLES
+    # --------------------------------------------------------
 
-
-    if not has_leadership_level:
-        return False
-
-
-    # Remove obviously wrong junior roles
     bad_levels = (
         "intern",
         "internship",
-        "assistant",
-        "associate",
+        "assistant category manager",
+        "associate category manager",
+        "category management associate",
+        "category management coordinator",
         "coordinator",
-        "specialist",
     )
 
 
@@ -684,10 +894,7 @@ def is_relevant_role(title):
         return False
 
 
-    return (
-        get_role_category(title)
-        is not None
-    )
+    return True
 
 
 # ============================================================
@@ -700,8 +907,10 @@ def validate_company(company):
         return None
 
 
-    company = clean_text(
-        company
+    company = (
+        clean_text(
+            company
+        )
     )
 
 
@@ -736,11 +945,13 @@ def validate_company(company):
             .replace("www.", "")
         )
 
+
         invalid_normalized = re.sub(
             r"\.(com|org|net|co|io)$",
             "",
             invalid_normalized
         )
+
 
         if (
             normalized
@@ -762,7 +973,7 @@ def validate_company(company):
 
 
 # ============================================================
-# COMPANY SLUG CLEANING
+# CLEAN COMPANY NAME FROM URL SLUG
 # ============================================================
 
 def humanize_slug(text):
@@ -798,7 +1009,10 @@ def company_from_ats_url(url):
 
     try:
 
-        parts = urlsplit(url)
+        parts = urlsplit(
+            url
+        )
+
 
         host = (
             parts.netloc
@@ -806,19 +1020,17 @@ def company_from_ats_url(url):
             .removeprefix("www.")
         )
 
+
         path_parts = [
             part
-            for part
-            in parts.path.split("/")
+            for part in
+            parts.path.split("/")
             if part
         ]
 
 
         # ====================================================
         # WORKDAY
-        #
-        # Example:
-        # nike.wd1.myworkdayjobs.com
         # ====================================================
 
         if host.endswith(
@@ -828,6 +1040,7 @@ def company_from_ats_url(url):
             first = (
                 host.split(".")[0]
             )
+
 
             if not re.fullmatch(
                 r"wd\d+",
@@ -840,14 +1053,13 @@ def company_from_ats_url(url):
                     )
                 )
 
+
                 if company:
                     return company
 
 
         # ====================================================
         # LEVER
-        #
-        # jobs.lever.co/company/job
         # ====================================================
 
         if host.endswith(
@@ -861,6 +1073,7 @@ def company_from_ats_url(url):
                         path_parts[0]
                     )
                 )
+
 
                 if company:
                     return company
@@ -880,6 +1093,7 @@ def company_from_ats_url(url):
                 "embed",
             }
 
+
             for part in path_parts:
 
                 if (
@@ -892,6 +1106,7 @@ def company_from_ats_url(url):
                             part
                         )
                     )
+
 
                     if company:
                         return company
@@ -913,6 +1128,7 @@ def company_from_ats_url(url):
                     )
                 )
 
+
                 if company:
                     return company
 
@@ -933,6 +1149,7 @@ def company_from_ats_url(url):
                     )
                 )
 
+
                 if company:
                     return company
 
@@ -947,12 +1164,6 @@ def company_from_ats_url(url):
 
 # ============================================================
 # COMPANY FROM TITLE
-#
-# Examples:
-#
-# Director, Product Development - Nike
-# VP Product Development | Ralph Lauren
-# Director of Sourcing at Example Company
 # ============================================================
 
 def company_from_title(title):
@@ -987,31 +1198,25 @@ def company_from_title(title):
             continue
 
 
-        possible_company = (
+        candidate = (
             parts[-1]
             .strip()
         )
 
 
         lower = (
-            possible_company
-            .lower()
+            candidate.lower()
         )
 
 
-        # Avoid mistaking a location
-        # for a company.
         bad_terms = (
-            "new york",
             "remote",
-            "nyc",
-            "manhattan",
-            "brooklyn",
-            "queens",
-            "bronx",
+            "united states",
             "director",
             "vice president",
             "product development",
+            "category manager",
+            "category director",
             "sourcing",
         )
 
@@ -1026,7 +1231,7 @@ def company_from_title(title):
 
         company = (
             validate_company(
-                possible_company
+                candidate
             )
         )
 
@@ -1039,12 +1244,7 @@ def company_from_title(title):
 
 
 # ============================================================
-# COMPANY FROM SEARCH SNIPPET
-#
-# Search engines sometimes return text like:
-#
-# "Nike is hiring a Director of Product Development..."
-# "Director Product Development at Ralph Lauren..."
+# COMPANY FROM SEARCH DESCRIPTION
 # ============================================================
 
 def company_from_snippet(
@@ -1059,14 +1259,16 @@ def company_from_snippet(
 
     patterns = (
 
-        r"([A-Z][A-Za-z0-9&.'’ -]{1,60}) "
+        r"([A-Z][A-Za-z0-9&.'’ -]{1,50}?) "
         r"is hiring",
 
         r"at "
-        r"([A-Z][A-Za-z0-9&.'’ -]{1,60})",
+        r"([A-Z][A-Za-z0-9&.'’ -]{1,50}?)"
+        r"(?:[,.|]| in | is | - )",
 
         r"join "
-        r"([A-Z][A-Za-z0-9&.'’ -]{1,60})",
+        r"([A-Z][A-Za-z0-9&.'’ -]{1,50}?)"
+        r"(?:[,.|]| in | as | - )",
     )
 
 
@@ -1088,11 +1290,6 @@ def company_from_snippet(
         )
 
 
-        # Stop very long accidental captures
-        if len(candidate) > 60:
-            continue
-
-
         company = (
             validate_company(
                 candidate
@@ -1111,13 +1308,14 @@ def company_from_snippet(
 # COMPANY FROM DIRECT EMPLOYER DOMAIN
 #
 # careers.nike.com -> Nike
-# jobs.coach.com -> Coach
 # ============================================================
 
 def company_from_regular_domain(url):
 
     domain = (
-        domain_from_url(url)
+        domain_from_url(
+            url
+        )
     )
 
 
@@ -1125,7 +1323,6 @@ def company_from_regular_domain(url):
         return None
 
 
-    # Never identify company from a blocked board
     if is_blocked_job_site(
         url
     ):
@@ -1133,7 +1330,6 @@ def company_from_regular_domain(url):
         return None
 
 
-    # ATS needs special logic instead
     if any(
         ats in domain
         for ats in ATS_DOMAINS
@@ -1171,10 +1367,7 @@ def identify_company(
     url
 ):
 
-    # ========================================================
-    # 1. ATS URL
-    # ========================================================
-
+    # ATS URL
     company = (
         company_from_ats_url(
             url
@@ -1193,10 +1386,7 @@ def identify_company(
         return company
 
 
-    # ========================================================
-    # 2. TITLE
-    # ========================================================
-
+    # Job title
     company = (
         company_from_title(
             title
@@ -1215,10 +1405,7 @@ def identify_company(
         return company
 
 
-    # ========================================================
-    # 3. SEARCH DESCRIPTION
-    # ========================================================
-
+    # Search description
     company = (
         company_from_snippet(
             title,
@@ -1238,10 +1425,7 @@ def identify_company(
         return company
 
 
-    # ========================================================
-    # 4. DIRECT EMPLOYER WEBSITE
-    # ========================================================
-
+    # Employer's own website
     company = (
         company_from_regular_domain(
             url
@@ -1260,10 +1444,6 @@ def identify_company(
         return company
 
 
-    # ========================================================
-    # NO COMPANY = NO JOB
-    # ========================================================
-
     return None
 
 
@@ -1278,130 +1458,70 @@ def priority_score(
     company
 ):
 
-    title_lower = (
-        title.lower()
-    )
-
-    combined = (
-        f"{title} {snippet}"
-        .lower()
-    )
-
-    domain = (
-        domain_from_url(url)
-    )
-
     category = (
         get_role_category(
             title
         )
     )
 
+
+    domain = (
+        domain_from_url(
+            url
+        )
+    )
+
+
     score = 0
 
 
     # ========================================================
-    # VP ROLES = HIGHEST PRIORITY
+    # VP - HIGHEST PRIORITY
     # ========================================================
 
-    if category == (
-        "VP - Product Development & Sourcing"
-    ):
+    scoring = {
 
-        score += 30
+        "VP - Product Development & Sourcing": 35,
 
+        "VP - Product Development": 32,
 
-    elif category == (
-        "VP - Product Development"
-    ):
+        "VP - Product": 30,
 
-        score += 28
+        "VP - Sourcing": 28,
 
+        "Senior Director - Product Development & Sourcing": 27,
 
-    elif category == (
-        "VP - Sourcing"
-    ):
+        "Senior Director - Product Development": 25,
 
-        score += 24
+        "Senior Category Director": 24,
 
+        "Senior Director - Sourcing": 23,
 
-    # ========================================================
-    # SENIOR DIRECTOR
-    # ========================================================
+        "Director - Product Development & Sourcing": 23,
 
-    elif (
-        category
-        == "Senior Director - Product Development & Sourcing"
-    ):
+        "Director - Product Development": 22,
 
-        score += 23
+        "Category Director": 21,
 
+        "Head - Product Development": 22,
 
-    elif (
-        category
-        == "Senior Director - Product Development"
-    ):
+        "Head - Product": 21,
 
-        score += 22
+        "Director - Sourcing": 20,
+
+        "Head - Sourcing": 20,
+
+        "Senior Category Manager": 18,
+
+        "Category Manager": 15,
+    }
 
 
-    elif (
-        category
-        == "Senior Director - Sourcing"
-    ):
+    score += scoring.get(
+        category,
+        0
+    )
 
-        score += 20
-
-
-    # ========================================================
-    # DIRECTOR
-    # ========================================================
-
-    elif (
-        category
-        == "Director - Product Development & Sourcing"
-    ):
-
-        score += 20
-
-
-    elif (
-        category
-        == "Director - Product Development"
-    ):
-
-        score += 19
-
-
-    elif (
-        category
-        == "Director - Sourcing"
-    ):
-
-        score += 17
-
-
-    # ========================================================
-    # HEAD
-    # ========================================================
-
-    elif category == (
-        "Head - Product Development"
-    ):
-
-        score += 20
-
-
-    elif category == (
-        "Head - Sourcing"
-    ):
-
-        score += 18
-
-
-    # ========================================================
-    # LOCATION
-    # ========================================================
 
     location = (
         get_location_type(
@@ -1411,50 +1531,22 @@ def priority_score(
     )
 
 
-    if location == "NYC":
-        score += 5
-
-
-    elif location == "Remote":
-        score += 5
-
-
-    elif location == "NYC / Remote":
-        score += 6
-
-
-    # ========================================================
-    # STRONG PHRASES
-    # ========================================================
-
-    if (
-        "product development"
-        in title_lower
-    ):
+    if location == "Remote - USA":
 
         score += 4
 
 
-    if (
-        "sourcing"
-        in title_lower
-    ):
+    elif location == "USA":
 
         score += 3
 
-
-    # ========================================================
-    # REAL COMPANY IDENTIFIED
-    # ========================================================
 
     if company:
+
         score += 3
 
 
-    # ========================================================
-    # DIRECT ATS / CAREER PAGE
-    # ========================================================
-
+    # Direct company ATS gets bonus
     if any(
         ats in domain
         for ats in ATS_DOMAINS
@@ -1468,9 +1560,6 @@ def priority_score(
 
 # ============================================================
 # DUPLICATE KEY
-#
-# Same company + same title + same location
-# is considered the same job.
 # ============================================================
 
 def normalize_for_key(text):
@@ -1512,11 +1601,6 @@ def job_key(job):
                 ""
             )
         ),
-
-        job.get(
-            "location_type",
-            ""
-        ),
     )
 
 
@@ -1552,32 +1636,26 @@ def load_existing_jobs():
 
         for row in reader:
 
-            title = (
-                clean_text(
-                    row.get(
-                        "title",
-                        ""
-                    )
+            title = clean_text(
+                row.get(
+                    "title",
+                    ""
                 )
             )
 
 
-            snippet = (
-                clean_text(
-                    row.get(
-                        "snippet",
-                        ""
-                    )
+            snippet = clean_text(
+                row.get(
+                    "snippet",
+                    ""
                 )
             )
 
 
-            url = (
-                clean_text(
-                    row.get(
-                        "url",
-                        ""
-                    )
+            url = clean_text(
+                row.get(
+                    "url",
+                    ""
                 )
             )
 
@@ -1586,8 +1664,7 @@ def load_existing_jobs():
                 continue
 
 
-            # Delete anything from Indeed,
-            # LinkedIn, Glassdoor, etc.
+            # Remove blocked search sites
             if is_blocked_job_site(
                 url
             ):
@@ -1595,23 +1672,11 @@ def load_existing_jobs():
                 continue
 
 
-            # Delete roles that no longer meet criteria
+            # Remove irrelevant positions
             if not is_relevant_role(
                 title
             ):
 
-                continue
-
-
-            location = (
-                get_location_type(
-                    title,
-                    snippet
-                )
-            )
-
-
-            if not location:
                 continue
 
 
@@ -1636,33 +1701,33 @@ def load_existing_jobs():
                 )
 
 
-            # No actual company?
-            # Throw away the old row.
             if not company:
                 continue
 
 
-            row["company"] = company
+            row[
+                "company"
+            ] = company
 
-            row["location_type"] = (
-                location
+
+            row[
+                "role_category"
+            ] = get_role_category(
+                title
             )
 
-            row["role_category"] = (
-                get_role_category(
-                    title
+
+            row[
+                "url"
+            ] = canonicalize_url(
+                url
+            )
+
+
+            key = (
+                job_key(
+                    row
                 )
-            )
-
-            row["url"] = (
-                canonicalize_url(
-                    url
-                )
-            )
-
-
-            key = job_key(
-                row
             )
 
 
@@ -1675,7 +1740,7 @@ def load_existing_jobs():
 
 
 # ============================================================
-# PROCESS SEARCH RESULT
+# PROCESS ONE SEARCH RESULT
 # ============================================================
 
 def process_result(
@@ -1717,14 +1782,12 @@ def process_result(
 
 
     if not title or not url:
+
         return None
 
 
     # ========================================================
-    # HARD BLOCK:
-    #
-    # INDEED / LINKEDIN / GLASSDOOR ETC.
-    # NEVER ENTER THE DATABASE.
+    # BLOCK INDEED/LINKEDIN/etc.
     # ========================================================
 
     if is_blocked_job_site(
@@ -1732,7 +1795,7 @@ def process_result(
     ):
 
         print(
-            "  BLOCKED job-board result:",
+            "  BLOCKED:",
             domain_from_url(url)
         )
 
@@ -1740,7 +1803,7 @@ def process_result(
 
 
     # ========================================================
-    # TITLE MUST MATCH OUR LEADERSHIP ROLES
+    # CORRECT ROLE
     # ========================================================
 
     if not is_relevant_role(
@@ -1751,18 +1814,24 @@ def process_result(
 
 
     # ========================================================
-    # LOCATION MUST BE NYC OR REMOTE
+    # USA ONLY
     # ========================================================
 
     location_type = (
         get_location_type(
             title,
-            snippet
+            snippet,
+            query
         )
     )
 
 
     if not location_type:
+
+        print(
+            "  SKIPPED - could not verify USA:",
+            title
+        )
 
         return None
 
@@ -1775,7 +1844,7 @@ def process_result(
 
 
     # ========================================================
-    # MUST IDENTIFY REAL COMPANY
+    # REAL EMPLOYER REQUIRED
     # ========================================================
 
     company = (
@@ -1797,14 +1866,14 @@ def process_result(
     if not company:
 
         print(
-            "  SKIPPED - could not identify real employer:",
+            "  SKIPPED - no real employer:",
             title
         )
 
         return None
 
 
-    role_category = (
+    category = (
         get_role_category(
             title
         )
@@ -1830,7 +1899,7 @@ def process_result(
             title,
 
         "role_category":
-            role_category,
+            category,
 
         "location_type":
             location_type,
@@ -1862,7 +1931,7 @@ def process_result(
 
 
 # ============================================================
-# SEARCH WEB
+# SEARCH THE WEB
 # ============================================================
 
 def search_web():
@@ -1874,7 +1943,7 @@ def search_web():
 
     print(
         f"Running {len(queries)} "
-        "leadership searches."
+        "USA leadership searches."
     )
 
 
@@ -1914,10 +1983,6 @@ def search_web():
             - start_time
         )
 
-
-        # ====================================================
-        # HARD TIME LIMIT
-        # ====================================================
 
         if (
             elapsed
@@ -1995,11 +2060,14 @@ def search_web():
 
 
             if not job:
+
                 continue
 
 
-            key = job_key(
-                job
+            key = (
+                job_key(
+                    job
+                )
             )
 
 
@@ -2071,8 +2139,8 @@ def search_web():
 
 
     print(
-        f"Valid unique jobs found: "
-        f"{len(found)}"
+        "Valid unique jobs found:",
+        len(found)
     )
 
 
@@ -2130,9 +2198,7 @@ def save_master_csv(
 
                     job[
                         "first_seen_utc"
-                    ] = (
-                        old_first_seen
-                    )
+                    ] = old_first_seen
 
 
                 combined[
@@ -2152,7 +2218,6 @@ def save_master_csv(
     )
 
 
-    # Highest priority first
     rows.sort(
 
         key=lambda row: (
@@ -2198,7 +2263,6 @@ def save_master_csv(
 
             writer.writerow(
                 {
-
                     field:
                     row.get(
                         field,
@@ -2212,7 +2276,7 @@ def save_master_csv(
 
 
 # ============================================================
-# NEW JOB REPORT
+# NEW JOB ALERT
 # ============================================================
 
 def write_new_jobs_report(
@@ -2261,7 +2325,7 @@ def write_new_jobs_report(
 
     lines = [
 
-        f"# {len(ordered)} new product leadership job(s)",
+        f"# {len(ordered)} new leadership job(s)",
 
         "",
 
@@ -2269,24 +2333,34 @@ def write_new_jobs_report(
 
         "",
 
-        "**Filters:**",
+        "**Search criteria:**",
 
-        "- VP / Vice President",
+        "- United States only",
 
-        "- Director / Senior Director",
+        "- U.S. remote positions included",
 
-        "- Head of",
+        "- VP Product",
 
-        "- Product Development",
+        "- VP Product Development",
 
-        "- Sourcing",
+        "- VP Sourcing",
 
-        "- NYC OR Remote",
+        "- Director / Senior Director Product Development",
 
-        "- Must have identifiable real employer",
+        "- Director / Senior Director Sourcing",
+
+        "- Category Director",
+
+        "- Category Manager",
+
+        "- Senior Category Manager",
+
+        "- Head of Product / Product Development / Sourcing",
+
+        "- Actual employer required",
 
         "- Indeed / LinkedIn / Glassdoor / "
-        "ZipRecruiter completely excluded",
+        "ZipRecruiter blocked",
 
         "",
     ]
@@ -2400,7 +2474,7 @@ def main():
     )
 
     print(
-        "PRODUCT LEADERSHIP JOB FINDER"
+        "PRODUCT / SOURCING LEADERSHIP FINDER"
     )
 
     print(
@@ -2410,7 +2484,11 @@ def main():
     print()
 
     print(
-        "Searching for:"
+        "Searching anywhere in the USA for:"
+    )
+
+    print(
+        "- VP Product"
     )
 
     print(
@@ -2430,32 +2508,30 @@ def main():
     )
 
     print(
-        "- Senior Director roles"
+        "- Category Director"
     )
 
     print(
-        "- Head of Product Development / Sourcing"
+        "- Category Manager"
     )
 
     print(
-        "- NYC OR Remote"
+        "- Senior Category Manager"
     )
 
     print(
-        "- REAL employer required"
-    )
-
-    print(
-        "- Indeed / LinkedIn / "
-        "Glassdoor / ZipRecruiter blocked"
+        "- Head roles"
     )
 
     print()
 
+    print(
+        "Indeed / LinkedIn / Glassdoor / "
+        "ZipRecruiter are blocked."
+    )
 
-    # ========================================================
-    # LOAD PREVIOUS JOBS
-    # ========================================================
+    print()
+
 
     existing = (
         load_existing_jobs()
@@ -2475,18 +2551,10 @@ def main():
     print()
 
 
-    # ========================================================
-    # SEARCH
-    # ========================================================
-
     found = (
         search_web()
     )
 
-
-    # ========================================================
-    # FIND NEW JOBS
-    # ========================================================
 
     new_jobs = [
 
@@ -2514,19 +2582,11 @@ def main():
     )
 
 
-    # ========================================================
-    # SAVE
-    # ========================================================
-
     save_master_csv(
         existing,
         found
     )
 
-
-    # ========================================================
-    # ALERT
-    # ========================================================
 
     write_new_jobs_report(
         new_jobs
